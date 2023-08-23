@@ -16,11 +16,18 @@ backup_destination="$2"
 encryption_key="$3"
 days="$4"
 
+# Create a variable to store the full date with underscores
+current_date=$(date +"%Y_%m_%d_%H_%M_%S")
+
 # Create backup directory if it doesn't exist
 if [ ! -d "$backup_destination" ]; then
     mkdir -p "$backup_destination"
     # the -p option used with the mkdir command ensures that the parent directories of the specified directory are also created if they don't exist.
 fi
+
+# Create a directory with the formatted date
+backup_directory="$backup_destination/$current_date"
+mkdir -p "$backup_directory"
 
 # Backup all directories
 find "$source_directory" -mindepth 1 -type d -print | while read -r dir; do
@@ -30,7 +37,7 @@ find "$source_directory" -mindepth 1 -type d -print | while read -r dir; do
 # while read -r dir; do: This part of the command starts a loop that reads the paths of directories found by the find command. The -r option is used with read to ensure that backslashes are not treated as escape characters.
 # dir_name=$(basename "$dir"): This line extracts the base name of the directory path stored in the dir variable. The basename command removes the path and returns only the directory's name.
     dir_name=$(basename "$dir")
-    tar -czf - -C "$source_directory" "$dir_name" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:"$encryption_key" > "$backup_destination/${dir_name}.tar.gz.enc"    # (-) after tar czf indicates that the output should be sent to the standard output (stdout) instead of creating an actual file. This is often used for piping data to another command.
+    tar -czf - -C "$source_directory" "$dir_name" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:"$encryption_key" > "$backup_directory/${dir_name}.tar.gz.enc"    # (-) after tar czf indicates that the output should be sent to the standard output (stdout) instead of creating an actual file. This is often used for piping data to another command.
     # c indicates that you're creating an archive. Yes, the -c option is mandatory when you want to create an archive using the tar command. The -c option indicates that you are creating an archive. It's an essential part of the command syntax for creating tar archives.
     # z indicates that you want to compress the archive using gzip.
     # f specifies the output file name.
@@ -46,6 +53,6 @@ done
 find "$source_directory" -mindepth 1 -type f -mtime -$days -print | while read -r file; do
 # -mtime -$days: This option is used to select files based on their modification time. Specifically, it selects files that were modified within the last $days days. The - sign before $days indicates "less than," so you're selecting files that are older than $days days.
     file_name=$(basename "$file")
-tar -czf - -C "$source_directory" "$file_name" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:"$encryption_key" > "$backup_destination/${file_name}.tar.gz.enc"
+tar -czf - -C "$source_directory" "$file_name" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:"$encryption_key" > "$backup_directory/${file_name}.tar.gz.enc"
 done
 print_color "green" "Backup completed."
