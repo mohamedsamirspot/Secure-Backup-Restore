@@ -5,7 +5,7 @@
 # Check for correct number of arguments
 if [ "$#" -ne 4 ]; then
 # $#: This variable holds the number of command-line arguments that were passed to the script. 
-    print_color "red" "You should have 4 inputs: $0 <source_directory> <backup_directory> <num_days>"
+    print_color "red" "You should enter 4 parameters: $0 <source_directory> <backup_directory> <encryption-key> <num_days>"
     # $0: This variable holds the name of the script itself (including its path, if it was invoked with a path)
     exit 1
     # The command exit 1 is used to terminate the script with a non-zero exit status, indicating that the script encountered an error or didn't execute successfully.
@@ -15,15 +15,38 @@ source_directory="$1"
 backup_destination="$2"
 encryption_key="$3"
 days="$4"
-
 # Create a variable to store the full date with underscores
 current_date=$(date +"%Y_%m_%d_%H_%M_%S")
 
-# Create backup directory if it doesn't exist
+# Check if the source_directory is a directory
+if [ ! -d "$source_directory" ]; then
+    print_color "red" "The source directory '$source_directory' does not exist or is not a directory."
+    exit 1
+fi
+
+# Check if the backup_destination is a directory or create it
 if [ ! -d "$backup_destination" ]; then
     mkdir -p "$backup_destination"
     # the -p option used with the mkdir command ensures that the parent directories of the specified directory are also created if they don't exist.
+    if [ $? -ne 0 ]; then
+    # if [ $? -ne 0 ]; then: After attempting to create the directory, this line checks the exit status of the mkdir command. The special variable $? contains the exit status of the last executed command. 
+        print_color "red" "Failed to create backup destination directory '$backup_destination'."
+        exit 1
+    fi
 fi
+
+# Check if the encryption_key file exists and is a file
+if [ ! -f "$encryption_key" ]; then
+    print_color "red" "The encryption key file '$encryption_key' does not exist or is not a file."
+    exit 1
+fi
+
+# Check if days is a valid number
+if ! [[ "$days" =~ ^[0-9]+$ ]]; then
+    print_color "red" "The number of days '$days' is not a valid positive integer."
+    exit 1
+fi
+
 
 # Create a directory with the formatted date
 backup_directory="$backup_destination/$current_date"
@@ -37,7 +60,7 @@ find "$source_directory" -mindepth 1 -type d -print | while read -r dir; do
 # while read -r dir; do: This part of the command starts a loop that reads the paths of directories found by the find command. The -r option is used with read to ensure that backslashes are not treated as escape characters.
 # dir_name=$(basename "$dir"): This line extracts the base name of the directory path stored in the dir variable. The basename command removes the path and returns only the directory's name.
     dir_name=$(basename "$dir")
-    tar -czf - -C "$source_directory" "$dir_name" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:"$encryption_key" > "$backup_directory/${dir_name}.tar.gz.enc"    # (-) after tar czf indicates that the output should be sent to the standard output (stdout) instead of creating an actual file. This is often used for piping data to another command.
+    tar -czf - -C "$source_directory" "$dir_name" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:"$encryption_key" > "$backup_directory/${dir_name}_${current_date}.tar.gz.enc"    # (-) after tar czf indicates that the output should be sent to the standard output (stdout) instead of creating an actual file. This is often used for piping data to another command.
     # c indicates that you're creating an archive. Yes, the -c option is mandatory when you want to create an archive using the tar command. The -c option indicates that you are creating an archive. It's an essential part of the command syntax for creating tar archives.
     # z indicates that you want to compress the archive using gzip.
     # f specifies the output file name.
@@ -49,10 +72,14 @@ find "$source_directory" -mindepth 1 -type d -print | while read -r dir; do
 done
 
 
-# Backup changed files
-find "$source_directory" -mindepth 1 -type f -mtime -$days -print | while read -r file; do
+
+# Create a temporary directory to store the files
+temp_dir=$(mktemp -d)
+# Add files to the temporary directory
+find "$source_directory" -mindepth 1 -type f -mtime -$days -exec cp -t "$temp_dir" {} +
 # -mtime -$days: This option is used to select files based on their modification time. Specifically, it selects files that were modified within the last $days days. The - sign before $days indicates "less than," so you're selecting files that are older than $days days.
-    file_name=$(basename "$file")
-tar -czf - -C "$source_directory" "$file_name" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:"$encryption_key" > "$backup_directory/${file_name}.tar.gz.enc"
-done
+# Encrypt and backup the files
+tar -czf - -C "$temp_dir" . | gzip | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:"$encryption_key" -out "$backup_directory/files_${current_date}.tar.gz.enc"
+# Clean up temporary files and directory
+rm -rf "$temp_dir"
 print_color "green" "Backup completed."
