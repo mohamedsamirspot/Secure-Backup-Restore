@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. colors_function.sh
+. backup_restore_lib.sh
 
 # Check for correct number of arguments
 if [ "$#" -ne 4 ]; then
@@ -79,7 +79,7 @@ temp_dir=$(mktemp -d)
 find "$source_directory" -mindepth 1 -type f -mtime -$days -exec cp -t "$temp_dir" {} +
 # -mtime -$days: This option is used to select files based on their modification time. Specifically, it selects files that were modified within the last $days days. The - sign before $days indicates "less than," so you're selecting files that are older than $days days.
 # Encrypt and backup the files
-tar -czf - -C "$temp_dir" . | gzip | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:"$encryption_key" -out "$backup_directory/files_${current_date}.tar.gz.enc"
+tar -czf - -C "$temp_dir" . | openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:"$encryption_key" -out "$backup_directory/files_${current_date}.tar.gz.enc"
 # Clean up temporary files and directory
 rm -rf "$temp_dir"
 print_color "green" "Backup completed."

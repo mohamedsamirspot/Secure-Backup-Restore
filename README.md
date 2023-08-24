@@ -8,9 +8,9 @@ first create the syemmtric encryption key
 
     openssl rand -base64 32 > encryption.key
 
-to run the script
+to use the backup script
     
-     ./backup.sh source-dir destination-dir modified-days
+     ./backup.sh <source_directory> <backup_directory> <encryption-key> <num_days>
 
 to decrypt 
 
@@ -19,3 +19,8 @@ When specifying the path to the key file in the openssl command either in enc or
 like this:
     
     openssl enc -d -aes-256-cbc -pbkdf2 -in files_2023_08_23_23_16_53.tar.gz.enc -out decrypted-archive.tar.gz -pass file:/home/spot/Downloads/Secure-Backup-Restore/encryption.key
+
+
+to use the restore script
+
+    ./restore.sh <backup_directory> <restore_directory> <decryption-key>
