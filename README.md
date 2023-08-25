@@ -40,4 +40,3 @@ Here's what each field means:
 - To Verify: This will display the list of scheduled cron jobs for your user.
     
         crontab -l
-
