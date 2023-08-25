@@ -1,5 +1,7 @@
 # Secure-Backup-Restore
-![images](https://github.com/mohamedsamirspot/Secure-Backup-Restore/assets/71722372/07d3e5c5-848a-492b-abdf-d4b077d27001)
+![images](https://github.com/mohamedsamirspot/Secure-Backup-Restore/assets/71722372/07d3e5c5-848a-492b-abdf-d4b077d27001) ![rsz_data-backup-strategy-e1630681061437](https://github.com/mohamedsamirspot/Secure-Backup-Restore/assets/71722372/78374f68-ea8c-4015-b184-a37134bc9e45)
+
+
 
 Bash scripts that perform secure encrypted backup and restore functionality, copying the backup to a remote server, and also scheduling running the backup script on predefined times using the crond utility.
 
