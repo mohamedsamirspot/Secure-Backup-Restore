@@ -7,4 +7,4 @@
 validate_backup_params "$@"
 
 # Call the backup function
-backup "$1" "$2" "$3" "$4"
+backup "$@"

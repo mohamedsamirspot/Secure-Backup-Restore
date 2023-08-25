@@ -7,4 +7,4 @@
 validate_restore_params "$@"
 
 # Call the restore function
-restore "$1" "$2" "$3"
+restore "$@"
