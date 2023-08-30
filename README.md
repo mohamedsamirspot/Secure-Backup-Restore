@@ -1,5 +1,8 @@
 # Secure-Backup-Restore
-![images](https://github.com/mohamedsamirspot/Secure-Backup-Restore/assets/71722372/07d3e5c5-848a-492b-abdf-d4b077d27001) ![rsz_data-backup-strategy-e1630681061437](https://github.com/mohamedsamirspot/Secure-Backup-Restore/assets/71722372/78374f68-ea8c-4015-b184-a37134bc9e45)
+
+![Bash_Logo_Colored svg (2)](https://github.com/mohamedsamirspot/Secure-Backup-Restore/assets/71722372/afd00fd4-8acf-4dc8-9df4-5b110b0cc42b)
+![data-backup-strategy-e1630681061437 (1)](https://github.com/mohamedsamirspot/Secure-Backup-Restore/assets/71722372/0dce5e1a-22bd-4e69-b1d9-9891de4a7f89)
+
 
 
 
